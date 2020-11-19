@@ -1,0 +1,10 @@
+{
+    "mysql" : {
+        "user": "root",
+        "password": "",
+        "host": "127.0.0.1",
+        "database": "mmo"
+    },
+  "ip": "localhost",
+  "port": 6789
+}
