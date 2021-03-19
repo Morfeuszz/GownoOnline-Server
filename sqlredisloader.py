@@ -35,7 +35,7 @@ characterData = {
 for new_message in pub.listen():
     try:
         channel = new_message['channel']
-        message = json.loads(new_message['data']
+        message = json.loads(new_message['data'])
         if(channel == "newLogin"):
             userData["ID"] =  message["ID"]
             userData["familyName"] = message["familyName"]
@@ -58,7 +58,7 @@ for new_message in pub.listen():
             characterData["position"] = result[5]
             redis.Redis(db=1)
             red.hmset(str(characterData["ID"]), characterData)
-            red.publish("loadCharacter", json.dumps(message))
+            #red.publish("loadCharacter", json.dumps(message))
             characterData = {
                "ID" : 0,
                "ownerID" : 0,
@@ -67,7 +67,6 @@ for new_message in pub.listen():
                "exp" : 0,
                "position" : 0,
             }
-
     except Exception as e:
         print(e,"error")
 

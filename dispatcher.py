@@ -30,12 +30,15 @@ async def startRedis():
 async def auth(websocket):
     global red2
     try:
-        data = json.loads(await websocket.recv())
+        await websocket.send('{"action" : "requestToken"}')
+        message = await websocket.recv()
+        print(message)
+        data = json.loads(message)
         token = red2.hget(str(data["ID"]), "authToken")
         if(data["authToken"] == data["authToken"]):
             toAdd = {data["ID"] : websocket}
             IDwebsocket.update(toAdd)
-            await websocket.send("connected")
+            await websocket.send('{"action" : "tokenSuccess"}')
             return
         else:
             await websocket.send("wypierdalaj, zly token")
@@ -52,6 +55,7 @@ async def counter(websocket, path):
     try:
         await auth(websocket)
         async for message in websocket:
+            print(message)
             data = json.loads(message)
             red2.publish(data["action"],message)
     finally:
@@ -64,10 +68,11 @@ async def pubsub(pub):
             message = new_message.value
             data = json.loads(message)
             for target in data["target"]:
-                await IDwebsocket[target].send(json.dumps(data["message"]))
+                print(target)
+                print(IDwebsocket)
+                await IDwebsocket[str(target)].send(json.dumps(data["message"]))
         except Exception as e:
             print(e,"error pubsub")
-
 
 
 

@@ -35,27 +35,35 @@ class methods:
             if(data["password"] == await methods.decrypt(result[2])):
                 rand_token = uuid4()
                 red.publish('newLogin', '{"ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[3], rand_token))
-                await websocket.send('{"Status" : "Success", "ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[3], rand_token))
+                await websocket.send('{"action" : "login", "status" : "success", "ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[3], rand_token))
             else:
-                await websocket.send('Failed')
+                await websocket.send('{"action" : "login", "status" : "failed"}')
+        else:
+            await websocket.send('{"action" : "login", "status" : "failed"}')
 
     async def register(data,websocket):
         cursor.execute(f"SELECT id FROM users WHERE username = '{data['username']}'")
         result = cursor.fetchone()
         if(result == None):
             temp = await methods.encrypt(data['password'])
-            cursor.execute(f'INSERT INTO users (Username, Password, familyName) VALUES ("{data["username"]}", "{temp}", "{data["familyName"]}")')
+            cursor.execute(f'INSERT INTO users (Username, Password, mail) VALUES ("{data["username"]}", "{temp}", "{data["mail"]}")')
             mydb.commit()
             cursor.execute(f"SELECT id, familyName FROM users WHERE username = '{data['username']}'")
             result = cursor.fetchone()
             rand_token = uuid4()
             red.publish('newLogin', '{"ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[1], rand_token))
-            await websocket.send('{"Status" : "Success", "ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[1], rand_token))
+            await websocket.send('{"action" : "register", "status" : "success", "ID" : "%s", "familyName" : "%s", "authToken" : "%s"}' % (result[0], result[1], rand_token))
         else:
-            await websocket.send('Username taken')
+            await websocket.send('{"action" : "register", "status" : "taken"}')
     
     async def getCharacters(data,websocket):
-        pass
+        cursor.execute(f"SELECT id FROM characters WHERE ownerID = '{data['ID']}'")
+        result = cursor.fetchall()
+    
+    async def loadCharacterData(data,websocket):
+        red.publish('loadCharacterData', json.dumps(data))
+    
+        
 
 class auth:
     async def counter(websocket, path):

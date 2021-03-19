@@ -1,0 +1,5 @@
+0 - user data
+1 - character data
+2 - character inventory
+3 - character appereance
+10- server info
