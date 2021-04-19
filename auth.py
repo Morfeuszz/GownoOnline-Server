@@ -57,11 +57,49 @@ class methods:
             await websocket.send('{"action" : "register", "status" : "taken"}')
     
     async def getCharacters(data,websocket):
-        cursor.execute(f"SELECT id FROM characters WHERE ownerID = '{data['ID']}'")
+        cursor.execute(f"SELECT * FROM characters WHERE ownerID = '{data['ID']}'")
         result = cursor.fetchall()
-    
+        charactersList = []
+        for characterData in result:
+            character = {
+                "ID" : characterData[0],
+                "ownerID" : characterData[1],
+                "Name" : characterData[2],
+                "Level" : characterData[3],
+                "Exp" : characterData[4],
+                "Position" : characterData[5],
+                "Appearance" : characterData[6]
+            }
+            charactersList.append(character)
+        
+        respons = {
+            "action" : "getCharacters",
+            "data" : charactersList
+        }
+        await websocket.send(json.dumps(respons))
+
     async def loadCharacterData(data,websocket):
         red.publish('loadCharacterData', json.dumps(data))
+
+    async def createCharacter(data,websocket):
+        cursor.execute(f"SELECT * FROM characters WHERE Name= '{data['Name']}'")
+        result = cursor.fetchone()
+        if(result):
+            respons = {
+                "action" : "createCharacter",
+                "status" : "usernameTaken"
+            }
+            await websocket.send(json.dumps(respons))
+        else:
+            cursor.execute(f"INSERT INTO characters (Name, ownerID, Appearance) VALUES ('{data['Name']}','{data['ownerID']}','{data['Appearance']}')")
+            mydb.commit()
+            respons = {
+                "action" : "createCharacter",
+                "status" : "success"
+            }
+            await websocket.send(json.dumps(respons))
+
+
     
         
 
@@ -78,6 +116,7 @@ class auth:
                     await websocket.send('nope')
         finally:
             USERS.remove(websocket)
+
 
     start_server = websockets.serve(counter, ip, port)
 

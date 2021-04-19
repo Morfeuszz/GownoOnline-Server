@@ -13,12 +13,17 @@ for new_message in pub.listen():
         message = json.loads(new_message['data'])
         redis.Redis(db=1)
         characterData  = red.hgetall(message["charID"])
+        redis.Redis(db=2)
+        inventoryData = red.hgetall(message["charID"])
+
         if(message["ID"] == int(characterData["ownerID"])):
             respons = {
                 "target" : [message["ID"]],
                 "message" : {
+                    "action" : "loadCharacter",
                     "ID" : message["ID"],
                     "characterData" : characterData
+                    "inventoryData" : inventoryData
                 }
             }
             red.publish("websocket", json.dumps(respons))
