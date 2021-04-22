@@ -17,6 +17,7 @@ pub = red.pubsub()
 pub.subscribe('newLogin')
 pub.subscribe('loadCharacterData')
 pub.subscribe('getInventoryData')
+pub.subscribe('loadAllItems')
 
 userData = {
     "ID" : 0,
@@ -76,25 +77,41 @@ for new_message in pub.listen():
                    "name" : 0,
                    "level" : 0,
                    "exp" : 0,
-                   "position" : 0,
+                   "position" : 0
+                }
                 redis.Redis(db=2)            
                 if(not red.exists(message["charID"])):
-                cursor.execute(f"SELECT characterID, slots, money, weight, maxWeight, data FROM inventory WHERE characterID = '{message['charID']}'")
-                inventoryData["ID"] = result[0]
-                inventoryData["slots"] = result[1]
-                inventoryData["data"] = result[2]
-                red.hmset(str(inventoryData["ID"]), inventoryData )
-                inventoryData = {
-                    "ID" : 0,
-                    "slots" : 0,
-                    "money" : 0,
-                    "weight" : 0,
-                    "maxWeight" : 0,
-                    "data" : 0
-                }
-                red.publish("loadCharacter", json.dumps(message))
-                }
-
+                    cursor.execute(f"SELECT characterID, slots, money, weight, maxWeight, data FROM inventory WHERE characterID = '{message['charID']}'")
+                    inventoryData["ID"] = result[0]
+                    inventoryData["slots"] = result[1]
+                    inventoryData["data"] = result[2]
+                    red.hmset(str(inventoryData["ID"]), inventoryData )
+                    inventoryData = {
+                        "ID" : 0,
+                        "slots" : 0,
+                        "money" : 0,
+                        "weight" : 0,
+                        "maxWeight" : 0,
+                        "data" : 0
+                    }
+                    red.publish("loadCharacter", json.dumps(message))
+                    
+            if(channel == "loadAllItems"):
+                redis.Redis(db=9)
+                cursor.execute(f"SELECT * FROM items;")
+                result = cursor.fetchall()
+                for item in result:
+                    itemsData["ID"] = item[0]
+                    itemsData["Name"] = item[1]
+                    itemsData["Stats"] = item[2]
+                    itemsData["Weight"] = item[3]
+                    red.hmset(str(itemsData["ID"]), itemsData)
+                    itemsData = {
+                        "ID" : 0,
+                        "Name" : 0,
+                        "Stats" : 0,
+                        "Weight" : 0
+                    }
     except Exception as e:
         print(e,"error")
 

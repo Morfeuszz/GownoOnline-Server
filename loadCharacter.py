@@ -22,7 +22,7 @@ for new_message in pub.listen():
                 "message" : {
                     "action" : "loadCharacter",
                     "ID" : message["ID"],
-                    "characterData" : characterData
+                    "characterData" : characterData,
                     "inventoryData" : inventoryData
                 }
             }

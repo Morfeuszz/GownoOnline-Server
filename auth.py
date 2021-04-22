@@ -82,6 +82,7 @@ class methods:
         red.publish('loadCharacterData', json.dumps(data))
 
     async def createCharacter(data,websocket):
+        print(data)
         cursor.execute(f"SELECT * FROM characters WHERE Name= '{data['Name']}'")
         result = cursor.fetchone()
         if(result):
@@ -91,7 +92,7 @@ class methods:
             }
             await websocket.send(json.dumps(respons))
         else:
-            cursor.execute(f"INSERT INTO characters (Name, ownerID, Appearance) VALUES ('{data['Name']}','{data['ownerID']}','{data['Appearance']}')")
+            cursor.execute(f"INSERT INTO characters (Name, ownerID, Appearance) VALUES ('{data['Name']}','{data['ownerID']}','{json.dumps(data['Appearance'])}')")
             mydb.commit()
             respons = {
                 "action" : "createCharacter",

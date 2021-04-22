@@ -2,4 +2,5 @@
 1 - character data
 2 - character inventory
 3 - character appereance
+9 - items list
 10- server info
